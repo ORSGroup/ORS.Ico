@@ -101,7 +101,7 @@ else
 
       con
         .deploy({data:getBinary(), arguments: [] } )
-        .send({from: eb, gas: 450000}, (err, txhash) => {
+        .send({from: eb, gas: 450000, gasPrice: MYGASPRICE}, (err, txhash) => {
           if (txhash) console.log( "send txhash: ", txhash );
         } )
         .on('error', (err) => { console.log("err: ", err); })
@@ -122,9 +122,11 @@ else
         console.log( cmd + ' ' + addr );
 
         if (cmd == 'add')
-          con.methods.add( addr ).send( {from: eb, gas: 64610} );
+          con.methods.add( addr )
+                     .send( {from: eb, gas: 64610, gasPrice: MYGASPRICE} );
         else // remove
-          con.methods.remove( addr ).send( {from: eb, gas: 50000} );
+          con.methods.remove( addr )
+                     .send( {from: eb, gas: 50000, gasPrice: MYGASPRICE} );
       }
 
       if (cmd == 'at')
@@ -139,7 +141,8 @@ else
       {
         let addr = process.argv[5];
         checkAddr(addr);
-        con.methods.changeOwner( addr ).send( {from: eb, gas: 30000} );
+        con.methods.changeOwner( addr )
+                   .send( {from: eb, gas: 30000, gasPrice: MYGASPRICE} );
       }
 
       if (cmd == 'count')
@@ -167,7 +170,8 @@ else
           process.stdout.write( process.argv[ii] + ' ' );
         }
         process.stdout.write( ')\n' );
-        con.methods.setMembers( addrs ).send( {from: eb, gas: 200000} );
+        con.methods.setMembers( addrs )
+                   .send( {from: eb, gas: 200000, gasPrice: MYGASPRICE} );
       }
 
       if (cmd == 'suicide')
