@@ -49,7 +49,7 @@ contract Whitelist is owned {
     members_.length--;
   }
 
-  function toIndex( address who ) internal constant returns (int)
+  function toIndex( address who ) public constant returns (int)
   {
     for( uint ix = 0; ix < members_.length; ix++ )
       if (members_[ix] == who) return int(ix);

@@ -51,13 +51,21 @@ echo get gasPrice
 echo ""
 echo add and then remove $TESTACCTA then count should be zero
 node cli.js 0 $SCA add $TESTACCTA
-node cli.js 0 $SCA remove $TESTACCTA
-node cli.js 0 $SCA count
 
 echo ""
-echo set'(' $TESTACCTA $TESTACCTB ')' then count should be two
+echo confirm $TESTACCTA is a member
+node cli.js 0 $SCA isMember $TESTACCTA
+
+echo ""
+echo remove and confirm $TESTACCTA is NOT a member
+node cli.js 0 $SCA remove $TESTACCTA
+node cli.js 0 $SCA isMember $TESTACCTA
+
+echo ""
+echo set'(' $TESTACCTA $TESTACCTB ')' then count should be two and B is member
 node cli.js 0 $SCA 'set' $TESTACCTA $TESTACCTB
 node cli.js 0 $SCA count
+node cli.js 0 $SCA isMember $TESTACCTB
 
 echo ""
 echo get member at position 0, expect $TESTACCTA

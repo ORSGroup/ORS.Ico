@@ -10,7 +10,7 @@ const Web3 = require('web3');
 const web3 =
   new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
-const MYGASPRICE = '' + 6 * 1e9;
+const MYGASPRICE = '' + 4 * 1e9;
 
 function getABI() {
   return JSON.parse( fs.readFileSync('./build/Whitelist_sol_Whitelist.abi')
@@ -45,6 +45,7 @@ const cmds =
    'count',
    'deploy',
    'gasPrice',
+   'isMember',
    'owner',
    'remove',   // <address>
    'set',      // <address>+
@@ -61,6 +62,7 @@ function usage() {
      '\tcount |\n',
      '\tdeploy |\n',
      '\tgasPrice |\n',
+     '\tisMember <address> |\n',
      '\towner |\n',
      '\tremove <addr> |\n',
      '\tset <addr>+ |\n',
@@ -149,6 +151,14 @@ else
       {
         con.methods.count().call().then( (cn) => {
           console.log( 'count: ', cn );
+        } );
+      }
+
+      if (cmd == 'isMember')
+      {
+        checkAddr( process.argv[5] );
+        con.methods.toIndex( process.argv[5] ).call().then( (is) => {
+          console.log( 'isMember: ', is );
         } );
       }
 
