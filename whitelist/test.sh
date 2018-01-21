@@ -42,7 +42,7 @@ fi
 #
 echo ""
 echo get gasPrice
-node cli.js 0 0 gasPrice
+#node cli.js 0 0 gasPrice
 
 #
 # Test business functions
@@ -69,7 +69,7 @@ node cli.js 0 $SCA at 1
 
 echo ""
 echo remove member at position 0, count should be 1
-node cli.js 0 $SCA remove 0
+node cli.js 0 $SCA remove $TESTACCTA
 node cli.js 0 $SCA count
 
 echo ""

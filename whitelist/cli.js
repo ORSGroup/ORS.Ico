@@ -13,12 +13,12 @@ const web3 =
 const MYGASPRICE = '' + 6 * 1e9;
 
 function getABI() {
-  return JSON.parse( fs.readFileSync('../build/Whitelist_sol_Whitelist.abi')
+  return JSON.parse( fs.readFileSync('./build/Whitelist_sol_Whitelist.abi')
                        .toString() );
 }
 
 function getBinary() {
-  var binary = fs.readFileSync('../build/Whitelist_sol_Whitelist.bin')
+  var binary = fs.readFileSync('./build/Whitelist_sol_Whitelist.bin')
                  .toString();
   if (!binary.startsWith('0x')) binary = '0x' + binary;
   return binary;
@@ -41,6 +41,7 @@ const cmds =
   [
    'add', // <address>
    'at',  // <index>
+   'chown',
    'count',
    'deploy',
    'gasPrice',
@@ -56,6 +57,7 @@ function usage() {
      'Commands:\n',
      '\tadd <addr> |\n',
      '\tat <index> |\n',
+     '\tchown <newaddr> |\n',
      '\tcount |\n',
      '\tdeploy |\n',
      '\tgasPrice |\n',
@@ -99,7 +101,7 @@ else
 
       con
         .deploy({data:getBinary(), arguments: [] } )
-        .send({from: eb, gas: 412520}, (err, txhash) => {
+        .send({from: eb, gas: 450000}, (err, txhash) => {
           if (txhash) console.log( "send txhash: ", txhash );
         } )
         .on('error', (err) => { console.log("err: ", err); })
@@ -120,17 +122,24 @@ else
         console.log( cmd + ' ' + addr );
 
         if (cmd == 'add')
-          con.methods.add( addr ).send( {from: eb, gas: 107110} );
+          con.methods.add( addr ).send( {from: eb, gas: 64610} );
         else // remove
-          con.methods.remove( addr ).send( {from: eb, gas: 34580} );
+          con.methods.remove( addr ).send( {from: eb, gas: 50000} );
       }
 
       if (cmd == 'at')
       {
         let ix = parseInt( process.argv[5] );
-        con.methods.at(ix).call().then( (mbr) => {
+        con.methods.memberAt(ix).call().then( (mbr) => {
           console.log( 'member: ', mbr );
         } );
+      }
+
+      if (cmd == 'chown')
+      {
+        let addr = process.argv[5];
+        checkAddr(addr);
+        con.methods.changeOwner( addr ).send( {from: eb, gas: 30000} );
       }
 
       if (cmd == 'count')
@@ -149,12 +158,16 @@ else
 
       if (cmd == 'set')
       {
-        var addrs = '';
-        for (var ii = 5; ii < process.argv.length; ii++)
-          addrs = addrs + ' ' + process.argv[ii];
+        var addrs = [];
+        process.stdout.write( 'set( ' );
 
-        console.log( 'set( ' + addrs + ' )' );
-        con.methods.set().send( {from: eb, gas: 150000} );
+        for (var ii = 5; ii < process.argv.length; ii++)
+        {
+          addrs.push( process.argv[ii] );
+          process.stdout.write( process.argv[ii] + ' ' );
+        }
+        process.stdout.write( ')\n' );
+        con.methods.setMembers( addrs ).send( {from: eb, gas: 200000} );
       }
 
       if (cmd == 'suicide')

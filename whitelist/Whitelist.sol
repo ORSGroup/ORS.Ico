@@ -33,7 +33,7 @@ contract Whitelist is owned {
 
   function add( address member ) onlyOwner public {
     int ix = toIndex( member );
-    if (-1 != ix) members_.push( member );
+    if (-1 == ix) members_.push( member );
   }
 
   function remove( address member ) onlyOwner public
@@ -49,7 +49,8 @@ contract Whitelist is owned {
     members_.length--;
   }
 
-  function toIndex( address who ) internal constant returns (int) {
+  function toIndex( address who ) internal constant returns (int)
+  {
     for( uint ix = 0; ix < members_.length; ix++ )
       if (members_[ix] == who) return int(ix);
 
