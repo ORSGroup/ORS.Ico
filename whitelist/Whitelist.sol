@@ -2,10 +2,21 @@
 pragma solidity ^0.4.19;
 
 contract owned {
+
   address public owner;
-  function owned() public { owner = msg.sender; }
-  function changeOwner( address newowner ) public onlyOwner {owner = newowner;}
-  function closedown() public onlyOwner { selfdestruct(owner); }
+
+  function owned() public {
+    owner = msg.sender;
+  }
+
+  function changeOwner( address newowner ) public onlyOwner {
+    owner = newowner;
+  }
+
+  function closedown() public onlyOwner {
+    selfdestruct(owner);
+  }
+
   modifier onlyOwner {
     if (msg.sender != owner) { revert(); }
     _;
@@ -14,46 +25,28 @@ contract owned {
 
 contract Whitelist is owned {
 
-  address[] members_;
+  mapping( address => bool ) members_;
 
   function Whitelist() public {}
+
   function() public payable { revert(); }
 
-  function count() public constant returns (uint) {
-    return members_.length;
-  }
-
-  function memberAt( uint ix ) public constant returns (address) {
-    return members_[ix];
-  }
-
-  function setMembers( address[] mbrs ) onlyOwner public {
-    members_ = mbrs;
+  function isMember( address mbr ) public constant returns (bool) {
+    return members_[mbr];
   }
 
   function add( address member ) onlyOwner public {
-    int ix = toIndex( member );
-    if (-1 == ix) members_.push( member );
+    members_[member] = true;
   }
 
-  function remove( address member ) onlyOwner public
-  {
-    int ix = toIndex( member );
-    require( int(-1) != ix );
-
-    // deletion leaves a gap - shuffle higher elements down one
-    for ( uint jx = uint(ix); jx < members_.length - 1; jx++)
-      members_[jx] = members_[jx+1];
-
-    delete members_[members_.length - 1];
-    members_.length--;
+  function remove( address member ) onlyOwner public {
+    members_[member] = false;
   }
 
-  function toIndex( address who ) public constant returns (int)
-  {
-    for( uint ix = 0; ix < members_.length; ix++ )
-      if (members_[ix] == who) return int(ix);
-
-    return int(-1);
+  function setMembers( address[] mbrs ) onlyOwner public {
+    for( uint ii = 0; ii < mbrs.length; ii++ )
+      add( mbrs[ii] );
   }
+
 }
+

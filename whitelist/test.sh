@@ -62,27 +62,9 @@ node cli.js 0 $SCA remove $TESTACCTA
 node cli.js 0 $SCA isMember $TESTACCTA
 
 echo ""
-echo set'(' $TESTACCTA $TESTACCTB ')' then count should be two and B is member
+echo set'(' $TESTACCTA $TESTACCTB ')' then B is member
 node cli.js 0 $SCA 'set' $TESTACCTA $TESTACCTB
-node cli.js 0 $SCA count
 node cli.js 0 $SCA isMember $TESTACCTB
-
-echo ""
-echo get member at position 0, expect $TESTACCTA
-node cli.js 0 $SCA at 0
-
-echo ""
-echo get member at position 1, expect $TESTACCTB
-node cli.js 0 $SCA at 1
-
-echo ""
-echo remove member at position 0, count should be 1
-node cli.js 0 $SCA remove $TESTACCTA
-node cli.js 0 $SCA count
-
-echo ""
-echo now member at 0 should be $TESTACCTB
-node cli.js 0 $SCA at 0
 
 #
 # Test common functions

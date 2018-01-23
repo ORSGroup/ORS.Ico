@@ -40,9 +40,7 @@ function checkAddr(addr) {
 const cmds =
   [
    'add', // <address>
-   'at',  // <index>
    'chown',
-   'count',
    'deploy',
    'gasPrice',
    'isMember',
@@ -57,9 +55,7 @@ function usage() {
     'Usage:\n$ node cli.js <acctindex> <SCA> <command> [arg]*\n',
      'Commands:\n',
      '\tadd <addr> |\n',
-     '\tat <index> |\n',
      '\tchown <newaddr> |\n',
-     '\tcount |\n',
      '\tdeploy |\n',
      '\tgasPrice |\n',
      '\tisMember <address> |\n',
@@ -131,14 +127,6 @@ else
                      .send( {from: eb, gas: 50000, gasPrice: MYGASPRICE} );
       }
 
-      if (cmd == 'at')
-      {
-        let ix = parseInt( process.argv[5] );
-        con.methods.memberAt(ix).call().then( (mbr) => {
-          console.log( 'member: ', mbr );
-        } );
-      }
-
       if (cmd == 'chown')
       {
         let addr = process.argv[5];
@@ -147,17 +135,9 @@ else
                    .send( {from: eb, gas: 30000, gasPrice: MYGASPRICE} );
       }
 
-      if (cmd == 'count')
-      {
-        con.methods.count().call().then( (cn) => {
-          console.log( 'count: ', cn );
-        } );
-      }
-
       if (cmd == 'isMember')
       {
-        checkAddr( process.argv[5] );
-        con.methods.toIndex( process.argv[5] ).call().then( (is) => {
+        con.methods.isMember( process.argv[5] ).call().then( (is) => {
           console.log( 'isMember: ', is );
         } );
       }
