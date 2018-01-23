@@ -3,9 +3,17 @@ pragma solidity ^0.4.19;
 
 contract owned {
   address public owner;
-  function owned() public { owner = msg.sender; }
-  function changeOwner( address newowner ) public onlyOwner {owner = newowner;}
+
+  function owned() public {
+    owner = msg.sender;
+  }
+
+  function changeOwner( address newowner ) public onlyOwner {
+    owner = newowner;
+  }
+
   function closedown() public onlyOwner { selfdestruct(owner); }
+
   modifier onlyOwner {
     if (msg.sender != owner) { revert(); }
     _;
@@ -17,24 +25,24 @@ contract owned {
 //
 contract PREICO is owned {
 
-  event Holder( address holder );
+  event Holder( address indexed holder, uint amount );
 
   uint public totalSupply_;
+
   address[] holders_;
+
   mapping( address => uint ) public balances_;
 
-  function PREICO() public {
-    totalSupply_ = uint(0);
-  }
+  function PREICO() public {}
 
-  function() public payable { revert(); }
-
-  function count() public constant returns (uint) {
-    return holders_.length;
-  }
+  function count() public constant returns (uint) { return holders_.length; }
 
   function holderAt( uint ix ) public constant returns (address) {
     return holders_[ix]; // throws
+  }
+
+  function balanceOf( address hldr ) public constant returns (uint) {
+    return balances_[hldr];
   }
 
   function add( address holder, uint amount ) onlyOwner public
@@ -48,7 +56,7 @@ contract PREICO is owned {
     if (!isHolder(holder))
     {
       holders_.push( holder );
-      Holder( holder );
+      Holder( holder, amount );
     }
   }
 

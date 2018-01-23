@@ -78,7 +78,7 @@ else
 
       con
         .deploy({data:LIB.getBinary(), arguments: [] } )
-        .send({from: eb, gas: 412520, gasPrice: MYGASPRICE}, (err, txhash) => {
+        .send({from: eb, gas: 450000, gasPrice: MYGASPRICE}, (err, txhash) => {
           if (txhash) console.log( "send txhash: ", txhash );
         } )
         .on('error', (err) => { console.log("err: ", err); })
@@ -105,9 +105,11 @@ else
         }
 
         if (cmd == 'add')
-          con.methods.add( addr, amt ).send( {from: eb, gas: 107110} );
+          con.methods.add( addr, amt )
+                     .send( {from: eb, gas: 150000, gasPrice: MYGASPRICE} );
         else // sub
-          con.methods.sub( addr, amt ).send( {from: eb, gas: 34580} );
+          con.methods.sub( addr, amt )
+                     .send( {from: eb, gas: 150000, gasPrice: MYGASPRICE} );
       }
 
       if (cmd == 'balance')

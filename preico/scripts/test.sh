@@ -54,6 +54,7 @@ echo ""
 echo twice add 1000 units for account 1
 node cli.js 0 $SCA add     $TESTACCTB 1000
 node cli.js 0 $SCA add     $TESTACCTB 1000
+node cli.js 0 $SCA balance $TESTACCTB
 
 echo ""
 echo how many holders, expect 1
