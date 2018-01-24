@@ -10,7 +10,7 @@ const Web3 = require('web3');
 const web3 =
   new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
-const MYGASPRICE = '' + 4 * 1e9;
+const MYGASPRICE = '' + (4 * 1e9);
 
 function getABI() {
   return JSON.parse( fs.readFileSync('./build/Whitelist_sol_Whitelist.abi')
@@ -97,9 +97,10 @@ else
     {
       let con = new web3.eth.Contract( getABI() );
 
+      // gas: 303478
       con
         .deploy({data:getBinary(), arguments: [] } )
-        .send({from: eb, gas: 450000, gasPrice: MYGASPRICE}, (err, txhash) => {
+        .send({from: eb, gas: 304000, gasPrice: MYGASPRICE}, (err, txhash) => {
           if (txhash) console.log( "send txhash: ", txhash );
         } )
         .on('error', (err) => { console.log("err: ", err); })
@@ -119,14 +120,17 @@ else
 
         console.log( cmd + ' ' + addr );
 
+        // gas: 43975
         if (cmd == 'add')
           con.methods.add( addr )
-                     .send( {from: eb, gas: 64610, gasPrice: MYGASPRICE} );
-        else // remove
+                     .send( {from: eb, gas: 44000, gasPrice: MYGASPRICE} );
+        else
           con.methods.remove( addr )
-                     .send( {from: eb, gas: 50000, gasPrice: MYGASPRICE} );
+                     .send( {from: eb, gas: 44000, gasPrice: MYGASPRICE} );
+          // remove gas: 14288
       }
 
+      // gas: 28641
       if (cmd == 'chown')
       {
         let addr = process.argv[5];
@@ -160,7 +164,8 @@ else
           process.stdout.write( process.argv[ii] + ' ' );
         }
         process.stdout.write( ')\n' );
-        con.methods.setMembers( addrs )
+        // gas for two addresses: 67596
+        con.methods.addMembers( addrs )
                    .send( {from: eb, gas: 200000, gasPrice: MYGASPRICE} );
       }
 

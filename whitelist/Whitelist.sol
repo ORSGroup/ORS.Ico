@@ -29,21 +29,22 @@ contract Whitelist is owned {
 
   function Whitelist() public {}
 
-  function() public payable { revert(); }
-
   function isMember( address mbr ) public constant returns (bool) {
     return members_[mbr];
   }
 
-  function add( address member ) onlyOwner public {
-    members_[member] = true;
+  function add( address mbr ) onlyOwner public {
+    if (isMember(mbr))
+      return;
+
+    members_[mbr] = true;
   }
 
-  function remove( address member ) onlyOwner public {
-    members_[member] = false;
+  function remove( address mbr ) onlyOwner public {
+    members_[mbr] = false;
   }
 
-  function setMembers( address[] mbrs ) onlyOwner public {
+  function addMembers( address[] mbrs ) onlyOwner public {
     for( uint ii = 0; ii < mbrs.length; ii++ )
       add( mbrs[ii] );
   }
