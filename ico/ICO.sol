@@ -61,17 +61,11 @@ contract ICO is owned {
                 address _whitelist,
                 uint    _tokpereth ) public {
 
-    require( _tokpereth > 0 );
-
-    // throws if _whitelist is not really a whitelist
-    Whitelist(_whitelist).isMember( address(this) );
-
+    tokenSC = MineableToken(_token);
     whitelist = Whitelist(_whitelist);
     tokpereth = _tokpereth;
 
     salescap = 500000000 * 10**5; // 500M with 5 decimal places
-
-    tokenSC = MineableToken(_token);
 
     // enumerate the few PREICO holders and assign initial holdings
     PREICO pico = PREICO( _preico );
@@ -91,6 +85,10 @@ contract ICO is owned {
   // enable/suspend sale
   function saleIsOn( bool newval ) onlyOwner public {
     saleOn = newval;
+  }
+
+  function setRate( uint newrate ) onlyOwner public {
+    tokpereth = newrate;
   }
 
   // buyer sends ether here
