@@ -53,11 +53,11 @@ contract MineableToken is owned {
                   address indexed spender,
                   uint value );
 
-  // ERC223, ERC20-compatible
+  // ERC20-compatible only, breaks ERC223 compliance, can't overload
   event Transfer( address indexed from,
                   address indexed to,
-                  uint256 value,
-                  bytes    data );
+                  uint256 value );
+                  //bytes    data );
 
   // Ethereum Token
   event Burn( address indexed from,
@@ -229,7 +229,9 @@ contract MineableToken is owned {
     balances_[from] -= value;
     balances_[to] += value;
 
-    Transfer( from, to, value, data );
+    bytes memory ignore;
+    ignore = data;               // ignore compiler warning
+    Transfer( from, to, value ); // ignore data
   }
 }
 

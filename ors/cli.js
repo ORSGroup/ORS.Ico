@@ -201,7 +201,7 @@ else
             if (events[ii].event == 'Transfer')
               console.log( events[ii].raw.topics[0] + "\n" + // from
                            events[ii].raw.topics[0] + "\n" + // to
-                           events[ii].raw.data ); // value,data
+                           events[ii].raw.data ); // value
 
             if (events[ii].event == 'Burn')
               console.log( events[ii].raw.topics[0] + "\n" + // from
