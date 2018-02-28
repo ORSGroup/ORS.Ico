@@ -29,6 +29,8 @@ contract Airdropper is owned {
                     address indexed receiver,
                     uint quantity );
 
+  function Airdropper() public {}
+
   function airdrop( address tokAddr,
                     address[] dests,
                     uint[] quantities ) public onlyOwner returns (uint) {
@@ -43,6 +45,5 @@ contract Airdropper is owned {
 
     return ii;
   }
-
 }
 

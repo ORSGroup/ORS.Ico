@@ -87,13 +87,9 @@ else
     if (cmd == 'deploy')
     {
       let con = new web3.eth.Contract( getABI() );
-      let tok = process.argv[5]; checkAddr(tok);
-      let pic = process.argv[6]; checkAddr(pic);
-      let whl = process.argv[7]; checkAddr(whl);
-      let rate = parseInt( process.argv[8] );
 
       con
-        .deploy({data:getBinary(), arguments: [tok, pic, whl, rate] } )
+        .deploy({data:getBinary()} )
         .send({from: eb, gas: 1000000, gasPrice: MYGASPRICE}, (err, txhash) => {
           if (txhash) console.log( "send txhash: ", txhash );
         } )
