@@ -3,12 +3,12 @@ pragma solidity ^0.4.19;
 
 // Ethereum Token callback
 interface tokenRecipient {
-  function receiveApproval( address from, uint256 value, bytes data ) public;
+  function receiveApproval( address from, uint256 value, bytes data ) external;
 }
 
 // ERC223 callback
 interface ContractReceiver {
-  function tokenFallback( address from, uint value, bytes data ) public;
+  function tokenFallback( address from, uint value, bytes data ) external;
 }
 
 contract owned {
@@ -53,7 +53,9 @@ contract MineableToken is owned {
                   address indexed spender,
                   uint value );
 
-  // ERC20-compatible only, breaks ERC223 compliance, can't overload
+  // ERC20-compatible version only, breaks ERC223 compliance but etherscan
+  // and exchanges only support ERC20 version. Can't overload events
+
   event Transfer( address indexed from,
                   address indexed to,
                   uint256 value );
@@ -107,7 +109,19 @@ contract MineableToken is owned {
   // ERC20
   function transfer(address to, uint256 value) public
   {
+    // no transfers allowed before ICO ends 26MAY2018 0900 CET
+    require( now >= 1527321600 );
+
     bytes memory empty; // null
+    _transfer( msg.sender, to, value, empty );
+  }
+
+  // enable ICO to transfer tokens immediately at time of sale without the
+  // time constraint
+
+  function fulfillOrder(address to, uint256 value) onlyOwner public
+  {
+    bytes memory empty;
     _transfer( msg.sender, to, value, empty );
   }
 
