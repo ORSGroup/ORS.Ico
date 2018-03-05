@@ -130,10 +130,12 @@ else
           let parts = line.split( /\s+/ );
           recips.push( parts[0] );
           qtys.push( parts[1] );
-        } );
+        } )
+        .on('close', () => {
 
-        con.methods.airdrop( process.argv[5], recips, qtys )
-                   .send( {from: eb, gas: 1000000, gasPrice: MYGASPRICE} );
+          con.methods.airdrop( process.argv[5], recips, qtys )
+                     .send( {from: eb, gas: 1000000, gasPrice: MYGASPRICE} );
+        } );
       }
 
       if (cmd == 'events')
