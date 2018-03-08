@@ -27,12 +27,16 @@ contract Community is owned {
 
   mapping( string => uint )    bonuses_;
   mapping( string => address ) managers_;
-  mapping( address => string ) public communityOf_;
+  mapping( address => string ) communityOf_;
 
   function Community() public {}
 
   function bonus( string cty ) public view returns(uint) {
     return bonuses_[cty];
+  }
+
+  function bonusFor( address who ) public view returns(uint) {
+    return bonuses_[communityOf_[who]];
   }
 
   function setBonus( string _cty, uint _bonus ) public onlyOwner {
