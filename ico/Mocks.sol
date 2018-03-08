@@ -33,6 +33,17 @@ contract Mocks
     return true;
   }
 
+  // Community --------------------------------------------------------------
+  function communityOf_(address who) public pure returns (string) {
+    require( who != address(0) );
+    return 'ABC';
+  }
+
+  function bonus( string cty ) public pure returns(uint) {
+    require( bytes(cty).length > 0 );
+    return 7;
+  }
+
   // PREICO holders list ----------------------------------------------------
   function count() public pure returns (uint) {
     return uint(2);

@@ -41,7 +41,6 @@ const cmds =
    'changeMiner',
    'deploy',
    'gasPrice',
-   'saleIsOn',
    'setRate',
    'withdraw',
    'chown',
@@ -55,9 +54,8 @@ function usage() {
      'Commands:\n',
      '\tbuy <wei> |\n',
      '\tchangeMiner <addr> |\n',
-     '\tdeploy <token SCA> <preico SCA> <whitelist SCA> <tokpereth> |\n',
+     '\tdeploy <tokenSCA> <preicoSCA> <tokpereth> <signer*> |\n',
      '\tgasPrice |\n',
-     '\tsaleIsOn <boolean> |\n',
      '\tsetRate <newrate> |\n',
      '\twithdraw <amount>\n',
      '\tchown <newaddr> |\n',
@@ -98,11 +96,14 @@ else
       let con = new web3.eth.Contract( getABI() );
       let tok = process.argv[5]; checkAddr(tok);
       let pic = process.argv[6]; checkAddr(pic);
-      let whl = process.argv[7]; checkAddr(whl);
-      let rate = parseInt( process.argv[8] );
+      let rate = parseInt( process.argv[7] );
+
+      let signers = [];
+      for (var ii = 8; ii < process.argv.length; ii++)
+        signers.push( process.argv[ii] );
 
       con
-        .deploy({data:getBinary(), arguments: [tok, pic, whl, rate] } )
+        .deploy({data:getBinary(), arguments: [signers, tok, pic, rate] } )
         .send({from: eb, gas: 1000000, gasPrice: MYGASPRICE}, (err, txhash) => {
           if (txhash) console.log( "send txhash: ", txhash );
         } )
@@ -129,18 +130,6 @@ else
         let addr = process.argv[5];
         checkAddr(addr);
         con.methods.newMiner( addr )
-                   .send( {from: eb, gas: 30000, gasPrice: MYGASPRICE} );
-      }
-
-      if (cmd == 'saleIsOn')
-      {
-        let flag = false;
-        if (    process.argv[5]
-             && (    process.argv[5].toLowerCase() == 'true'
-                  || process.argv[5].toLowerCase() == 'yes' ) )
-          flag = true;
-
-        con.methods.saleIsOn( flag )
                    .send( {from: eb, gas: 30000, gasPrice: MYGASPRICE} );
       }
 
@@ -175,14 +164,8 @@ else
         con.methods.owner().call().then( (ow) => {
           console.log( 'owner: ', ow );
         } );
-        con.methods.whitelist().call().then( (wl) => {
-          console.log( 'whitelist: ', wl );
-        } );
         con.methods.tokenSC().call().then( (tk) => {
           console.log( 'token: ', tk );
-        } );
-        con.methods.saleOn().call().then( (sl) => {
-          console.log( 'sale is On: ', sl );
         } );
         con.methods.tokpereth().call().then( (te) => {
           console.log( 'rate, tokens per ETH: ', te );
@@ -192,6 +175,27 @@ else
         } );
         con.methods.salescap().call().then( (sp) => {
           console.log( 'cap: ', sp );
+        } );
+        con.methods.started().call().then( (res) => {
+          console.log( 'started: ', res );
+        } );
+        con.methods.ended().call().then( (res) => {
+          console.log( 'ended: ', res );
+        } );
+        con.methods.startTime().call().then( (res) => {
+          console.log( 'startTime: ', res );
+        } );
+        con.methods.endTime().call().then( (res) => {
+          console.log( 'endTime: ', res );
+        } );
+        con.methods.price().call().then( (res) => {
+          console.log( 'price: ', res );
+        } );
+        con.methods.totalTokens().call().then( (res) => {
+          console.log( 'totalTokens: ', res );
+        } );
+        con.methods.remainingTokens().call().then( (res) => {
+          console.log( 'remainingTokens: ', res );
         } );
       }
     }
