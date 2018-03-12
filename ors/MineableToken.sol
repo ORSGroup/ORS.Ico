@@ -109,19 +109,7 @@ contract MineableToken is owned {
   // ERC20
   function transfer(address to, uint256 value) public
   {
-    // no transfers allowed before ICO ends 26MAY2018 0900 CET
-    require( now >= 1527321600 );
-
     bytes memory empty; // null
-    _transfer( msg.sender, to, value, empty );
-  }
-
-  // enable ICO to transfer tokens immediately at time of sale without the
-  // time constraint
-
-  function fulfillOrder(address to, uint256 value) onlyOwner public
-  {
-    bytes memory empty;
     _transfer( msg.sender, to, value, empty );
   }
 
@@ -239,6 +227,9 @@ contract MineableToken is owned {
     require( to != 0x0 );
     require( balances_[from] >= value );
     require( balances_[to] + value > balances_[to] ); // catch overflow
+
+    // no transfers allowed before ICO ends 26MAY2018 0900 CET
+    if (msg.sender != owner) require( now >= 1527321600 );
 
     balances_[from] -= value;
     balances_[to] += value;

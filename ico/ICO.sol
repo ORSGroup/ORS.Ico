@@ -201,7 +201,9 @@ contract ICO is ICOEngineInterface, KYCBase, owned {
     salescap = 500000000 * 10**5; // 500M with 5 decimal places
 
     eidoo_wallet_signer = _signers[0];
+  }
 
+  function doPreICO() public onlyOwner {
     // enumerate the few PREICO holders and assign initial holdings
     PREICO pico = PREICO( _preico );
     uint holdercount = pico.count();
@@ -236,14 +238,18 @@ contract ICO is ICOEngineInterface, KYCBase, owned {
     //          = msg.value   * tokpereth / 1e18 weipereth
 
     uint qty = divide( multiply(msg.value, tokpereth), 1e18 );
+    uint bonus = uint(0);
 
     // if signer is eidoo wallet, apply a 5% bonus
-    if (signer == eidoo_wallet_signer)
-      qty = divide( multiply(qty, 105), 100 );
 
-    // community-specific bonus
-    uint cbonus = community.bonusFor( buyer );
-    qty = divide( multiply(qty, 100 + cbonus), 100 );
+    if (signer == eidoo_wallet_signer)
+      bonus += 5;
+
+    // add bonus %age for buyer community
+
+    bonus += community.bonusFor( buyer );
+
+    qty = divide( multiply(qty, 100 + bonus), 100 );
 
     if (    qty > tokenSC.balanceOf(address(this))
          || qty < 1
