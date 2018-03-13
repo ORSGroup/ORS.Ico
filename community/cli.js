@@ -39,10 +39,9 @@ const cmds =
    'deploy',
    'chown',
    'variables',
-   'communityOf',
+   'setName',
    'setBonus',
    'setManager',
-   'addCommunity',
    'addMember',
    'addMembers',
    'dropMember',
@@ -57,12 +56,11 @@ function usage() {
      '\tdeploy |\n',
      '\tchown <new owner address> |\n',
      '\tvariables <cty> |\n',
-     '\tsetBonus <cty> <bonus> |\n',
-     '\tsetManager <cty> <manager> |\n',
-     '\tcommunityOf <address> |\n',
-     '\taddCommunity <cty id> <manager> <bonus> |\n',
-     '\taddMember <member> <community> |\n',
-     '\taddMembers <membersfile> <community> |\n',
+     '\tsetName <name> |\n',
+     '\tsetBonus <bonus> |\n',
+     '\tsetManager <manager> |\n',
+     '\taddMember <member> |\n',
+     '\taddMembers <membersfile> |\n',
      '\tdropMember <member> |\n',
      '\tdropMembers <membersfile> |\n'
   );
@@ -93,9 +91,6 @@ else
   var eb;
   web3.eth.getAccounts().then( (res) => {
     eb = res[ebi];
-    //console.log( 'Ξtherbase: ', eb );
-
-    // NOTE: times out when deploying to real blockchain, this is ok
     if (cmd == 'deploy')
     {
       let con = new web3.eth.Contract( getABI() );
@@ -125,46 +120,40 @@ else
 
       if (cmd == 'variables')
       {
-        con.methods.bonus( process.argv[5]).call().then( (res) => {
-          console.log( "bonus(", process.argv[5], ") = ", res );
+        con.methods.name_().call().then( (res) => {
+          console.log( "name = ", res );
         } );
 
-        con.methods.manager( process.argv[5]).call().then( (res) => {
-          console.log( "manager(", process.argv[5], ") = ", res );
+        con.methods.bonus_().call().then( (res) => {
+          console.log( "bonus = ", res );
+        } );
+
+        con.methods.manager_().call().then( (res) => {
+          console.log( "manager = ", res );
         } );
       }
 
-      if (cmd == 'communityOf')
+      if (cmd == 'setName')
       {
-        con.methods.communityOf_( process.argv[5]).call().then( (res) => {
-          console.log( "communityOf(", process.argv[5], ") = ", res );
-        } );
+        con.methods.setName( process.argv[5] )
+                   .send( {from: eb, gas: 60000, gasPrice: MYGASPRICE} );
       }
 
       if (cmd == 'setBonus')
       {
-        con.methods.setBonus( process.argv[5], process.argv[6] )
+        con.methods.setBonus( process.argv[5] )
                    .send( {from: eb, gas: 60000, gasPrice: MYGASPRICE} );
       }
 
       if (cmd == 'setManager')
       {
-        con.methods.setManager( process.argv[5], process.argv[6] )
+        con.methods.setManager( process.argv[5] )
                    .send( {from: eb, gas: 60000, gasPrice: MYGASPRICE} );
-      }
-
-      if (cmd == 'addCommunity')
-      {
-        con.methods.addCommunity( process.argv[5],
-                                  process.argv[6],
-                                  process.argv[7]
-                                )
-                   .send( {from: eb, gas: 100000, gasPrice: MYGASPRICE} );
       }
 
       if (cmd == 'addMember')
       {
-        con.methods.addMember( process.argv[5], process.argv[6] )
+        con.methods.addMember( process.argv[5] )
                    .send( {from: eb, gas: 100000, gasPrice: MYGASPRICE} );
       }
 
@@ -188,7 +177,7 @@ else
           if (cmd == 'addMembers')
           {
             console.log( 'adding ' + mbrs.length + ' members' );
-            con.methods.addMembers( mbrs, process.argv[6] )
+            con.methods.addMembers( mbrs )
                        .send( {from: eb, gas: 1000000, gasPrice: MYGASPRICE} );
           }
           else

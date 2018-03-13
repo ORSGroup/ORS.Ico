@@ -25,66 +25,46 @@ contract owned {
 
 contract Community is owned {
 
-  mapping( string => uint )    bonuses_;
-  mapping( string => address ) managers_;
-  mapping( address => string ) communityOf_;
+  string  public name_; // "IT", "KO", ...
+  address public manager_;
+  uint    public bonus_;
+
+  mapping( address => bool ) public members_;
 
   function Community() public {}
 
-  function bonus( string cty ) public view returns(uint) {
-    return bonuses_[cty];
+  function setName( string _name ) public onlyOwner {
+    name_ = _name;
   }
 
-  function bonusFor( address who ) public view returns(uint) {
-    return bonuses_[communityOf_[who]];
+  function setManager( address _mgr ) public onlyOwner {
+    manager_ = _mgr;
   }
 
-  function setBonus( string _cty, uint _bonus ) public onlyOwner {
-    bonuses_[_cty] = _bonus;
+  function setBonus( uint _bonus ) public onlyOwner {
+    bonus_ = _bonus;
   }
 
-  function manager( string cty ) public view returns(address) {
-    return managers_[cty];
+  function isMember( address _mbr ) public view returns(bool) {
+    return members_[_mbr];
   }
 
-  function setManager( string _cty, address _mgr ) public onlyOwner {
-    managers_[_cty] = _mgr;
+  function addMember( address _mbr ) onlyOwner public {
+    members_[_mbr] = true;
   }
 
-  function addCommunity( string _cty,
-                         address _mgr,
-                         uint _bonus ) onlyOwner public {
-
-    require(    bytes(_cty).length > 0
-             && _mgr != address(0)
-             && managers_[_cty] == address(0) // doesnt already exist
-           );
-
-    bonuses_[_cty] = _bonus;
-    managers_[_cty] = _mgr;
-  }
-
-  function addMember( address _mbr, string _cty ) onlyOwner public {
-
-    bytes memory ctybytes = bytes( communityOf_[_mbr] );
-    require( _mbr != address(0) && ctybytes.length == 0 );
-
-    communityOf_[_mbr] = _cty;
-  }
-
-  function addMembers( address[] _mbrs, string _cty ) onlyOwner public {
+  function addMembers( address[] _mbrs ) onlyOwner public {
     for( uint ii = 0; ii < _mbrs.length; ii++ )
-      addMember( _mbrs[ii], _cty );
+      addMember( _mbrs[ii] );
   }
 
   function dropMember( address _mbr ) onlyOwner public {
-    communityOf_[_mbr] = '';
+    members_[_mbr] = false;
   }
 
   function dropMembers( address[] _mbrs ) onlyOwner public {
     for( uint ii = 0; ii < _mbrs.length; ii++ )
       dropMember( _mbrs[ii] );
   }
-
 }
 
