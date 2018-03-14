@@ -30,25 +30,6 @@ node cli.js 0 0 deploy
 node cli.js 0 $SCA setName IT
 node cli.js 0 $SCA setManager $TESTACCTB
 node cli.js 0 $SCA setBonus 3
+node cli.js 0 $SCA setTimes 1521619200 1522396800
 node cli.js 0 $SCA variables
-
-echo ""
-echo add TESTACCTB as member of ABC community
-node cli.js 0 $SCA addMember $TESTACCTB ABC
-
-echo ""
-echo drop member TESTACCTB
-node cli.js 0 $SCA dropMember $TESTACCTB
-
-echo ""
-echo drop member TESTACCTB again
-node cli.js 0 $SCA dropMember $TESTACCTB
-
-echo ""
-echo add members to ABC from file
-node cli.js 0 $SCA addMembers accts.txt ABC
-
-echo ""
-echo add members to ABC from file
-node cli.js 0 $SCA dropMembers accts.txt
 

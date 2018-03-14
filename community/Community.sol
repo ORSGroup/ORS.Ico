@@ -18,18 +18,15 @@ contract owned {
   }
 }
 
-// a community is a grouping of addresses. communities may be organized by
-// locale, social media platform or any desired scheme. Each community has
-// a unique id (string), a manager (address) who presumably takes a leadership
-// leadership role, a community-specific bonus and members
-
 contract Community is owned {
+
+  event Receipt( address indexed sender, uint value );
 
   string  public name_; // "IT", "KO", ...
   address public manager_;
   uint    public bonus_;
-
-  mapping( address => bool ) public members_;
+  uint    public start_;
+  uint    public end_;
 
   function Community() public {}
 
@@ -45,26 +42,19 @@ contract Community is owned {
     bonus_ = _bonus;
   }
 
-  function isMember( address _mbr ) public view returns(bool) {
-    return members_[_mbr];
+  function setTimes( uint _start, uint _end ) public onlyOwner {
+    require( _end > _start );
+
+    start_ = _start;
+    end_ = _end;
   }
 
-  function addMember( address _mbr ) onlyOwner public {
-    members_[_mbr] = true;
-  }
+  function() public payable {
+    require( now >= start_ && now <= end_ );
 
-  function addMembers( address[] _mbrs ) onlyOwner public {
-    for( uint ii = 0; ii < _mbrs.length; ii++ )
-      addMember( _mbrs[ii] );
-  }
+    owner.transfer( msg.value );
 
-  function dropMember( address _mbr ) onlyOwner public {
-    members_[_mbr] = false;
-  }
-
-  function dropMembers( address[] _mbrs ) onlyOwner public {
-    for( uint ii = 0; ii < _mbrs.length; ii++ )
-      dropMember( _mbrs[ii] );
+    Receipt( msg.sender, msg.value );
   }
 }
 

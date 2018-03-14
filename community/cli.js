@@ -35,34 +35,26 @@ function checkAddr(addr) {
 
 const cmds =
   [
-   'gasPrice',
    'deploy',
    'chown',
    'variables',
    'setName',
    'setBonus',
    'setManager',
-   'addMember',
-   'addMembers',
-   'dropMember',
-   'dropMembers'
+   'setTimes'
   ];
 
 function usage() {
   console.log(
     'Usage:\n$ node cli.js <acctindex> <SCA> <command> [arg]*\n',
      'Commands:\n',
-     '\tgasPrice |\n',
      '\tdeploy |\n',
      '\tchown <new owner address> |\n',
      '\tvariables <cty> |\n',
      '\tsetName <name> |\n',
      '\tsetBonus <bonus> |\n',
      '\tsetManager <manager> |\n',
-     '\taddMember <member> |\n',
-     '\taddMembers <membersfile> |\n',
-     '\tdropMember <member> |\n',
-     '\tdropMembers <membersfile> |\n'
+     '\tsetTimes <start> <end>\n'
   );
 }
 
@@ -80,16 +72,8 @@ if (!found) {
 var ebi = process.argv[2]; // use eth.accounts[ebi]
 var sca = process.argv[3];
 
-if (cmd == 'gasPrice')
-{
-  web3.eth.getGasPrice().then( (gp) => {
-    console.log( 'network gasPrice: ', gp, ', hardcoded:', MYGASPRICE );
-  } );
-}
-else
-{
-  var eb;
-  web3.eth.getAccounts().then( (res) => {
+var eb;
+web3.eth.getAccounts().then( (res) => {
     eb = res[ebi];
     if (cmd == 'deploy')
     {
@@ -131,6 +115,14 @@ else
         con.methods.manager_().call().then( (res) => {
           console.log( "manager = ", res );
         } );
+
+        con.methods.start_().call().then( (res) => {
+          console.log( "start = ", res );
+        } );
+
+        con.methods.end_().call().then( (res) => {
+          console.log( "end = ", res );
+        } );
       }
 
       if (cmd == 'setName')
@@ -151,44 +143,11 @@ else
                    .send( {from: eb, gas: 60000, gasPrice: MYGASPRICE} );
       }
 
-      if (cmd == 'addMember')
+      if (cmd == 'setTimes')
       {
-        con.methods.addMember( process.argv[5] )
-                   .send( {from: eb, gas: 100000, gasPrice: MYGASPRICE} );
-      }
-
-      if (cmd == 'dropMember')
-      {
-        con.methods.dropMember( process.argv[5] )
-                   .send( {from: eb, gas: 100000, gasPrice: MYGASPRICE} );
-      }
-
-      if (cmd == 'addMembers' || cmd == 'dropMembers')
-      {
-        let mbrs = [];
-        var reader = require('readline').createInterface(
-          { input: fs.createReadStream( process.argv[5]) } );
-
-        reader.on('line', function(line) {
-          console.log(line);
-          mbrs.push(line);
-        } )
-        .on('close', () => {
-          if (cmd == 'addMembers')
-          {
-            console.log( 'adding ' + mbrs.length + ' members' );
-            con.methods.addMembers( mbrs )
-                       .send( {from: eb, gas: 1000000, gasPrice: MYGASPRICE} );
-          }
-          else
-          {
-            console.log( 'dropping ' + mbrs.length + ' members' );
-            con.methods.dropMembers( mbrs )
-                       .send( {from: eb, gas: 1000000, gasPrice: MYGASPRICE} );
-          }
-        } );
+        con.methods.setTimes( process.argv[5], process.argv[6] )
+                   .send( {from: eb, gas: 80000, gasPrice: MYGASPRICE} );
       }
     }
-  } );
-}
+} );
 
