@@ -37,6 +37,7 @@ const cmds =
   [
    'deploy',
    'chown',
+   'events',
    'variables',
    'setName',
    'setBonus',
@@ -50,6 +51,7 @@ function usage() {
      'Commands:\n',
      '\tdeploy |\n',
      '\tchown <new owner address> |\n',
+     '\tevents |\n',
      '\tvariables <cty> |\n',
      '\tsetName <name> |\n',
      '\tsetBonus <bonus> |\n',
@@ -81,7 +83,7 @@ web3.eth.getAccounts().then( (res) => {
 
       con
         .deploy({data:getBinary()} )
-        .send({from: eb, gas: 1000000, gasPrice: MYGASPRICE}, (err, txhash) => {
+        .send({from: eb, gas: 470000, gasPrice: MYGASPRICE}, (err, txhash) => {
           if (txhash) console.log( "send txhash: ", txhash );
         } )
         .on('error', (err) => { console.log("err: ", err); })
@@ -122,6 +124,23 @@ web3.eth.getAccounts().then( (res) => {
 
         con.methods.end_().call().then( (res) => {
           console.log( "end = ", res );
+        } );
+      }
+
+      if (cmd == 'events')
+      {
+        con.getPastEvents( 'allEvents', {fromBlock: 0, toBlock: 'latest'} )
+           .then( (events) => {
+
+          for (var ii = 0; ii < events.length; ii++) {
+            console.log( events[ii].event );
+
+            if (events[ii].event == 'Receipt')
+              console.log( events[ii].raw.topics[1] + "\n" +   // from
+                           parseInt(events[ii].raw.data,16) ); // value
+
+            console.log( '' );
+          }
         } );
       }
 

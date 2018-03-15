@@ -49,6 +49,7 @@ contract Community is owned {
     end_ = _end;
   }
 
+  // set gas limit to something greater than 24073
   function() public payable {
     require( now >= start_ && now <= end_ );
 
