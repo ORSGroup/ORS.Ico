@@ -49,7 +49,6 @@ const cmds =
    'chown',
    'deploy',
    'events',
-   'fulfillOrder',
    'gasPrice',
    'mine',
    'transfer',
@@ -70,7 +69,6 @@ function usage() {
      '\tchown <newaddr> |\n',
      '\tdeploy |\n',
      '\tevents |\n',
-     '\tfulfillOrder <toadd> <value> |\n',
      '\tgasPrice |\n',
      '\tmine <qty> |\n',
      '\ttransfer <toaddr> <value> |\n',
@@ -219,14 +217,6 @@ else
         let amt = process.argv[5];
         con.methods.mine( amt )
                    .send( {from: eb, gas: 64000, gasPrice: MYGASPRICE} );
-      }
-
-      if (cmd == 'fulfillOrder')
-      {
-        let toaddr = process.argv[5];
-        let value = process.argv[6];
-        con.methods.fulfillOrder( toaddr, value )
-                   .send( {from: eb, gas: 70000, gasPrice: MYGASPRICE} );
       }
 
       if (cmd == 'transfer')

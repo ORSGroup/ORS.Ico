@@ -67,7 +67,7 @@ contract MineableToken is owned {
 
   function MineableToken() public {
 
-    decimals = uint8(5);
+    decimals = uint8(18); // audit recommended 18 decimals
     supplyCap = 833333333 * 10**uint256(decimals);
 
     name = "ORST";
@@ -75,10 +75,13 @@ contract MineableToken is owned {
   }
 
   function mine( uint256 qty ) public onlyOwner {
-    require ( (totalSupply + qty) <= supplyCap );
+    require (    (totalSupply + qty) > totalSupply
+              && (totalSupply + qty) <= supplyCap
+            );
 
     totalSupply += qty;
     balances_[owner] += qty;
+    Transfer( address(0), owner, qty );
   }
 
   function cap() public constant returns(uint256) {
@@ -94,11 +97,31 @@ contract MineableToken is owned {
   function approve( address spender, uint256 value ) public
   returns (bool success)
   {
+    // WARNING! When changing the approval amount, first set it back to zero
+    // AND wait until the transaction is mined. Only afterwards set the new
+    // amount. Otherwise you may be prone to a race condition attack.
+    // See: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+
     allowances_[msg.sender][spender] = value;
     Approval( msg.sender, spender, value );
     return true;
   }
  
+  // recommended fix for known attack on any ERC20
+  function safeApprove( address _spender,
+                        uint256 _currentValue,
+                        uint256 _value ) public
+  returns (bool success)
+  {
+    // If current allowance for _spender is equal to _currentValue, then
+    // overwrite it with _value and return true, otherwise return false.
+
+    if (allowances_[msg.sender][_spender] == _currentValue)
+      return approve(_spender, _value);
+
+    return false;
+  }
+
   // ERC20
   function allowance( address owner, address spender ) public constant
   returns (uint256 remaining)
@@ -135,9 +158,13 @@ contract MineableToken is owned {
     if ( approve(spender, value) )
     {
       tokenRecipient recip = tokenRecipient( spender );
-      recip.receiveApproval( msg.sender, value, context );
+
+      if (isContract(recip))
+        recip.receiveApproval( msg.sender, value, context );
+
       return true;
     }
+
     return false;
   }        
 
@@ -206,9 +233,13 @@ contract MineableToken is owned {
     _transfer( msg.sender, to, value, data );
 
     ContractReceiver rx = ContractReceiver(to);
-    rx.tokenFallback( msg.sender, value, data );
 
-    return true;
+    if (isContract(rx)) {
+      rx.tokenFallback( msg.sender, value, data );
+      return true;
+    }
+
+    return false;
   }
 
   // ERC223 fetch contract size (must be nonzero to be a contract)

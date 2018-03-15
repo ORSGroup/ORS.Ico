@@ -31,10 +31,10 @@ fi
 echo ""
 echo simulate a sale of 1M tokens '( x 10**decimals )'
 echo mine
-node cli.js 0 $SCA mine 100000000000
+node cli.js 0 $SCA mine 1000000000000000000000000
 
 echo transfer
-node cli.js 0 $SCA fulfillOrder $TESTACCTB 100000000000
+node cli.js 0 $SCA transfer $TESTACCTB 100000000000
 echo balance should be 100000000000
 
 echo ""

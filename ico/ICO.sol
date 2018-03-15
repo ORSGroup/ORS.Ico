@@ -17,11 +17,6 @@ interface PREICO {
   function balanceOf( address hldr ) external returns (uint);
 }
 
-// buyer may be in a Community in which case s/he receives a bonus
-interface Community {
-  function bonusFor( address who ) external returns(uint);
-}
-
 // eidoo integration
 contract ICOEngineInterface {
 
@@ -62,7 +57,7 @@ contract ICOEngineInterface {
   // returns the total number of the tokens available for the sale, must not
   // change when the ico is started
   function totalTokens() public pure returns(uint) {
-    return uint(500000000 * 10**5); // selling up to 500M tokens with 5 dec
+    return uint(500000000 * 10**18); // selling up to 500M tokens with 18 dec
   }
 
   // returns the number of the tokens available for the ico. At the moment that
@@ -181,7 +176,6 @@ contract owned {
 //
 contract ICO is ICOEngineInterface, KYCBase, owned {
 
-  Community     public community;
   MineableToken public tokenSC;
 
   uint      public tokpereth;
@@ -191,23 +185,26 @@ contract ICO is ICOEngineInterface, KYCBase, owned {
   address public eidoo_wallet_signer;
 
   function ICO( address[] _signers,
-                address _token,
-                address _preico,
-                uint    _tokpereth ) public KYCBase(_signers) {
+                address   _token,
+                uint      _tokpereth ) public KYCBase(_signers) {
 
     tokenSC = MineableToken(_token);
     tokpereth = _tokpereth;
 
-    salescap = 500000000 * 10**5; // 500M with 5 decimal places
+    salescap = 500000000 * 10**18;
 
     eidoo_wallet_signer = _signers[0];
   }
 
-  function doPreICO() public onlyOwner {
+  function doPreICO( address _preico ) public onlyOwner {
+
     // enumerate the few PREICO holders and assign initial holdings
+    // note that holdings must take token decimal places into account
+
     PREICO pico = PREICO( _preico );
     uint holdercount = pico.count();
     address hldr;
+
     for( uint ii = 0; ii < holdercount; ii++ )
     {
       hldr = pico.holderAt( ii );
@@ -234,36 +231,44 @@ contract ICO is ICOEngineInterface, KYCBase, owned {
   function releaseTokensTo( address buyer, address signer )
     internal returns(bool) {
 
-    // quantity = amountinwei * tokperwei
-    //          = msg.value   * tokpereth / 1e18 weipereth
+    // quantity = amountinwei * tokperwei * 10**18
+    //          = msg.value   * tokpereth / 1e18 weipereth * 10**18
+    //
+    // NOTE: to save gas we can simplify. As we know that decimals is 18
+    //       the calculation reduces to:
+    //
+    //       quantity = amountinwei * tokpereth
 
-    uint qty = divide( multiply(msg.value, tokpereth), 1e18 );
-    uint bonus = uint(0);
+    uint qty = multiply( msg.value, tokpereth );
 
-    // if signer is eidoo wallet, apply a 5% bonus
+    // if signer corresponds to eidoo wallet user, apply a 5% bonus
 
     if (signer == eidoo_wallet_signer)
-      bonus += 5;
+      qty = divide( multiply(qty, 105), 100 );
 
-    // add bonus %age for buyer community
+    if ( qty < 1 || (sold + qty) < sold ) revert();
 
-    bonus += community.bonusFor( buyer );
-
-    qty = divide( multiply(qty, 100 + bonus), 100 );
+    // If close to reaching the salecap and the last transaction exceeds the
+    // remaining amount, accept the amount and return change back to the buyer
 
     if (    qty > tokenSC.balanceOf(address(this))
-         || qty < 1
          || (sold + qty) > salescap
-         || (sold + qty) > tokenSC.cap())
-      revert();
+         || (sold + qty) > tokenSC.cap()) {
 
-    fulfil( buyer, qty );
+      uint refundwei = msg.value - divide(remainingTokens(), tokpereth);
+
+      fulfil( buyer, remainingTokens() );
+      buyer.transfer( refundwei );
+    }
+    else
+      fulfil( buyer, qty );
   }
 
   // owner can withdraw sales receipts to own account only
   function withdraw( uint amount ) public onlyOwner returns (bool) {
     require (amount <= this.balance);
-    return owner.send( amount );
+    owner.transfer( amount ); // throws on failure
+    return true;
   }
 
   // DRY function
