@@ -6,7 +6,7 @@ const fs = require('fs');
 const Web3 = require('web3');
 const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
-const MYGASPRICE = '' + 1 * 1e9;
+const MYGASPRICE = '' + 2 * 1e9;
 
 function getABI() {
   return JSON.parse( fs.readFileSync('./build/Community_sol_Community.abi')
@@ -106,6 +106,10 @@ web3.eth.getAccounts().then( (res) => {
 
       if (cmd == 'variables')
       {
+        con.methods.owner().call().then( (res) => {
+          console.log( "owner = ", res );
+        } );
+
         con.methods.name_().call().then( (res) => {
           console.log( "name = ", res );
         } );
@@ -129,15 +133,15 @@ web3.eth.getAccounts().then( (res) => {
 
       if (cmd == 'events')
       {
-        con.getPastEvents( 'allEvents', {fromBlock: 0, toBlock: 'latest'} )
-           .then( (events) => {
+        con.getPastEvents().then( (events) => {
 
           for (var ii = 0; ii < events.length; ii++) {
-            console.log( events[ii].event );
 
             if (events[ii].event == 'Receipt')
-              console.log( events[ii].raw.topics[1] + "\n" +   // from
-                           parseInt(events[ii].raw.data,16) ); // value
+              console.log( events[ii].raw.topics[1] + ' ' +   // from
+                           parseInt(events[ii].raw.data,16) + ' ' +
+                           events[ii].blockNumber
+                           );
 
             console.log( '' );
           }
