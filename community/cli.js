@@ -4,7 +4,8 @@
 
 const fs = require('fs');
 const Web3 = require('web3');
-const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+const web3 =
+  new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8546"));
 
 const MYGASPRICE = '' + 2 * 1e9;
 
@@ -133,7 +134,9 @@ web3.eth.getAccounts().then( (res) => {
 
       if (cmd == 'events')
       {
-        con.getPastEvents().then( (events) => {
+        con.getPastEvents( 'allEvents',
+                           { fromBlock: 500000, toBlock: 'latest' } )
+           .then( (events) => {
 
           for (var ii = 0; ii < events.length; ii++) {
 
@@ -145,6 +148,8 @@ web3.eth.getAccounts().then( (res) => {
 
             console.log( '' );
           }
+
+          process.exit(0);
         } );
       }
 
