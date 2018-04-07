@@ -81,13 +81,15 @@ else
   var eb;
   web3.eth.getAccounts().then( (res) => {
     eb = res[ebi];
-    //console.log( 'Ξtherbase: ', eb );
+    console.log( 'Ξtherbase: ', eb );
 
     // NOTE: times out when deploying to real blockchain, this is ok
     if (cmd == 'deploy')
     {
+      console.log( 'getting ABI' );
       let con = new web3.eth.Contract( getABI() );
 
+      console.log( 'deploying...' );
       con
         .deploy({data:getBinary()} )
         .send({from: eb, gas: 1000000, gasPrice: MYGASPRICE}, (err, txhash) => {
@@ -97,7 +99,11 @@ else
         .on('transactionHash', (h) => { console.log( "hash: ", h ); } )
         .on('receipt', (r) => { console.log( 'rcpt: ' + r.contractAddress); } )
         .on('confirmation', (cn, rcpt) => { console.log( 'cn: ', cn ); } )
-        .then( (nin) => { console.log( "SCA", nin.options.address ); } );
+        .then( (nin) => {
+          console.log( "SCA", nin.options.address );
+
+          process.exit(0);
+        } );
     }
     else
     {
@@ -132,7 +138,8 @@ else
           qtys.push( parts[1] );
         } )
         .on('close', () => {
-
+          console.log( 'sizeof(recips): ' + recips.length +
+                       '\nsizeof(qtys): ' + qtys.length );
           con.methods.airdrop( process.argv[5], recips, qtys )
                      .send( {from: eb, gas: 1000000, gasPrice: MYGASPRICE} );
         } );
