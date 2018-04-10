@@ -248,14 +248,16 @@ contract ICO is ICOEngineInterface, KYCBase, owned {
 
     if ( qty < 1 || (sold + qty) < sold ) revert();
 
-    // If close to reaching the salecap and the last transaction exceeds the
-    // remaining amount, accept the amount and return change back to the buyer
+    // If close to salecap the last transaction may exceed the remaining
+    // amount. sell the remaining and return change back to the buyer
 
-    if (    qty > tokenSC.balanceOf(address(this))
-         || (sold + qty) > salescap
+    if (    (sold + qty) > salescap
          || (sold + qty) > tokenSC.cap()) {
 
-      uint refundwei = msg.value - divide(remainingTokens(), tokpereth);
+      // prevent underflow
+      require( msg.value >= divide(remainingTokens(), tokpereth) );
+
+      uint refundwei = msg.value - divide( remainingTokens(), tokpereth );
 
       fulfil( buyer, remainingTokens() );
       buyer.transfer( refundwei );

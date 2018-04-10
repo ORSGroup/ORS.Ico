@@ -5,9 +5,6 @@ TESTPVTB='0xff7da9b82a2bd5d76352b9c385295a430d2ea8f9f6f405a7ced42a5b0e73aad7'
 TESTACCTA='0x8c34f41f1cf2dfe2c28b1ce7808031c40ce26d38'
 TESTACCTB='0x147b61187f3f16583ac77060cbc4f711ae6c9349'
 
-SCA=$1
-STUB=$2
-
 if [ -z $SCA ]
 then
   echo No SCA detected
@@ -29,7 +26,7 @@ if [[ $ans != "y" && $ans != "Y" ]]; then
   echo ""
   echo Please run the following before this:
   echo ""
-  echo -n testrpc ""
+  echo -n ganache-cli ""
   echo -n --account=\"$TESTPVTA,100000000000000000000\" ""
   echo  --account=\"$TESTPVTB,100000000000000000000\"
   exit

@@ -4,6 +4,7 @@
 
 const fs = require('fs');
 const Web3 = require('web3');
+const math = require('mathjs');
 const web3 =
   new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
@@ -135,7 +136,9 @@ else
         reader.on('line', function(line) {
           let parts = line.split( /\s+/ );
           recips.push( parts[0] );
-          qtys.push( parts[1] );
+          let ramt = math.bignumber( parts[1] );
+          let amt = math.format(ramt, {notation:"fixed"});
+          qtys.push( amt );
         } )
         .on('close', () => {
           console.log( 'sizeof(recips): ' + recips.length +

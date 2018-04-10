@@ -1,5 +1,5 @@
-// compiler: 0.4.19+commit.c4cbbb05.Emscripten.clang
-pragma solidity ^0.4.19;
+// compiler: 0.4.21+commit.dfe3193c.Emscripten.clang
+pragma solidity ^0.4.21;
 
 // Ethereum Token callback
 interface tokenRecipient {
@@ -81,7 +81,7 @@ contract MineableToken is owned {
 
     totalSupply += qty;
     balances_[owner] += qty;
-    Transfer( address(0), owner, qty );
+    emit Transfer( address(0), owner, qty );
   }
 
   function cap() public constant returns(uint256) {
@@ -103,7 +103,7 @@ contract MineableToken is owned {
     // See: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
 
     allowances_[msg.sender][spender] = value;
-    Approval( msg.sender, spender, value );
+    emit Approval( msg.sender, spender, value );
     return true;
   }
  
@@ -176,7 +176,7 @@ contract MineableToken is owned {
     balances_[msg.sender] -= value;
     totalSupply -= value;
 
-    Burn( msg.sender, value );
+    emit Burn( msg.sender, value );
     return true;
   }
 
@@ -191,7 +191,7 @@ contract MineableToken is owned {
     allowances_[from][msg.sender] -= value;
     totalSupply -= value;
 
-    Burn( from, value );
+    emit Burn( from, value );
     return true;
   }
 
@@ -203,10 +203,8 @@ contract MineableToken is owned {
   {
     _transfer( msg.sender, to, value, data );
 
-    ContractReceiver rx = ContractReceiver( to );
-
     // throws if custom_fallback is not a valid contract call
-    require( rx.call.value(0)(bytes4(keccak256(custom_fallback)),
+    require( address(to).call.value(0)(bytes4(keccak256(custom_fallback)),
              msg.sender,
              value,
              data) );
@@ -266,8 +264,8 @@ contract MineableToken is owned {
     balances_[to] += value;
 
     bytes memory ignore;
-    ignore = data;               // ignore compiler warning
-    Transfer( from, to, value ); // ignore data
+    ignore = data;                    // ignore compiler warning
+    emit Transfer( from, to, value ); // ignore data
   }
 }
 

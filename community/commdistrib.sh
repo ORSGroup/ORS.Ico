@@ -27,14 +27,24 @@ fi
 
 SCA1='0x7A7913bf973D74dEb87dB64136Bcb63158e4eA39'
 SCA2='0x901C93F1bf70cB9a08A9716F4635c279f33ae8c7'
+SCA3='0xf0199c13f89514e2bba5465ef72f5b546b5a8579'
 
 # the following require geth to be running on this host. It may take some time
 # to complete especially if running geth is running in light mode
 #
 # note: depends on the format of the events output from cli.js.
 
+echo ''
+echo IT Receipts
 node cli.js 0 $SCA1 events >  receipts.txt
+
+echo ''
+echo ITP Receipts
 node cli.js 0 $SCA2 events >> receipts.txt
+
+echo ''
+echo ITP-2 Receipts
+node cli.js 0 $SCA3 events >> receipts.txt
 
 # ----------------------------------------------------------------------------
 # 2. the event information includes the block number. Sort the receipts by

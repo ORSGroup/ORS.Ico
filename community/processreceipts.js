@@ -23,8 +23,11 @@ const bigInt = require( 'big-integer' );
 const https = require( 'https' );
 const rdr = require( 'readline' );
 
-const rurl = 'https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=EUR';
 const fname = 'sortedreceipts.txt';
+const ename = 'eidoo_addresses_20180409.csv';
+
+const authurl1 = 'https://eidoo-api-1.eidoo.io/api/ico/';
+const authurl2 = '/authorization/';
 
 const lowerLimit = parseInt( process.argv[2] );
 const MYGASPRICE = '' + 1 * 1e9; // 1 Gwei
@@ -35,47 +38,39 @@ function getABI() {
 	    .toString() );
 }
 
-function isOnEidooList( addr ) {
-  // replace stub with a read of a file produced by eidoo or from eidoo API
-  return true;
-}
+var eidusers = {}; // "address" : "true"
 
-function isEidooWallet( addr ) {
-  // replace stub with a read of a file produced by eidoo or from eidoo API
-  return true;
-}
+function readEidooWalletFile() {
+  console.log( 'readEidooWalletFile' );
 
-let con = new web3.eth.Contract( getABI(), ORST_SCA );
+  let reader = rdr.createInterface( { input: fs.createReadStream(ename) } );
 
-var etheur; // rate will be read from rurl
-var receipts = [];
-var refunds = [];
-var sumwei = bigInt();
-
-// kick off the whole process
-getRate();
-
-function getRate() {
-  https.get( rurl, rsp => {
-
-    rsp.setEncoding( "utf8" );
-    let body = "";
-
-    rsp.on( "data", data => {
-      body += data;
-    } )
-    .on( "end", () => {
-      body = JSON.parse(body);
-      etheur = body['EUR'];
-      console.log( 'ETHEUR = ' + etheur );
-
-      readReceiptFile();
-
-    } );
+  reader.on('line', function(line) {
+    let parts = line.split( /\s+/ );
+    eidusers[parts[0]] = "true";
+  } )
+  .on('close', () => {
+    console.log( 'done reading ' +
+                 Object.keys(eidusers).length +
+                 ' eidoo wallet users.' );
   } );
 }
 
+function isEidooWallet( addr ) {
+  return ( eidusers[addr] == "true" );
+}
+
+//let con = new web3.eth.Contract( getABI(), ORST_SCA );
+
+var etheur = 409.70; // use hardcoded rate provided
+var receipts = []; // raw
+var distribs = [];
+var refunds = [];
+var sumwei = bigInt();
+
 function readReceiptFile() {
+
+  console.log( 'readReceiptFile' );
 
   let reader = rdr.createInterface( { input: fs.createReadStream(fname) } );
 
@@ -94,87 +89,129 @@ function readReceiptFile() {
     receipts.push( receipt );
   } )
   .on('close', () => {
-    console.log( 'sum: ', sumwei / bigInt('1e18') );
+    console.log( 'sum (ETH): ', sumwei / bigInt('1e18') );
     processReceipts();
+  } );
+}
+
+function registrationStep( rcpt ) {
+  https.get( authurl1 + rcpt['sender'] + authurl2 + rcpt['sender'], rsp => {
+    rsp.setEncoding( "utf8" );
+    let body = "";
+
+    rsp.on( "data", data => {
+      body += data;
+    } )
+    .on( "end", () => {
+      body = JSON.parse(body);
+      console.log( rcpt['sender'] + ' ' +
+                   rcpt['weisent'] + ' ' +
+                   body['authorized'] );
+
+      rcpt['authorized'] = body['authorized'];
+
+      if (rcpt['authorized']) {
+        distribs.push( rcpt );
+      }
+      else {
+        refunds.push( rcpt );
+      }
+    } );
   } );
 }
 
 function processReceipts() {
 
   // 0.05 cents per token means 20 tokens to the EUR
-  const tokpereth = eureth * 20;
-
-  let bonus = 0;
+  const tokpereth = etheur * 20;
 
   for (let ii = 0; ii < receipts.length; ii++) {
-    console.log( 'receipt: ' + receipts[ii]['number'] );
 
     if ( (ii+1) < lowerLimit)
       continue; // cat -n starts at 1, not 0
 
-    if (isOnEidooList(receipts[ii]['sender']))
-      bonus += 5;
-    else {
-      refunds.push( receipts[ii] );
-      continue;
+    setTimeout( () => {
+      registrationStep( receipts[ii] );
+    }, 20000 * Math.random() );
+  };
+
+  //
+  // runs after the registrationStep calls have all returned
+  //
+  setTimeout( () => {
+
+    console.log( '# receipts: ' + receipts.length );
+    console.log( '# distribs: ' + distribs.length );
+    console.log( '# refunds: ' + refunds.length );
+
+    console.log( 'DISTRIBS: ' + distribs.length );
+
+    let sumtokens = bigInt(0);
+
+    for (let ii = 0; ii < distribs.length; ii++) {
+
+      let bonus = 0;
+
+      if (isEidooWallet(distribs[ii]['sender']))
+        bonus += 5;
+
+      // for now, all communities are the same
+      //
+      // TODO : fetch from blockchain instead
+      bonus += 10;
+
+      // -------------------------------------------------------
+      // Quantity of tokens calculation
+      //
+      // Q = (ethersent * tokpereth) * (100 + bonus)/100
+      //   = (wei/10**18 * tokpereth) * (100+bonus)/100
+      //
+      // -------------------------------------------------------
+
+      let qty = distribs[ii]['weisent'] * tokpereth * (100+bonus)/100;
+
+      // mine the tokens for the sale, leaves them in the caller's account
+      // NOTE: caller must be the owner of the token smart contract to work
+
+      console.log( distribs[ii]['sender'] + ' ' + qty );
+
+      sumtokens += qty;
     }
 
-    // TODO : fetch from blockchain instead
-    bonus += 10;
+    console.log( 'total tokens: ' + sumtokens );
+  }, 25000 );
 
-    // -----------------------------------------------
-    // Quantity of tokens calculation
-    //
-    // Q = (ethersent * tokpereth) * (100 + bonus)/100
-    //   = (wei/10**18 * tokpereth) * (100+bonus)/100
-    // -----------------------------------------------
+  setTimeout( () => {
 
-    let qty = new bigInt(
-      receipts[ii]['weisent'] / bigInt('1e18') * tokpereth * (100+bonus)/100 );
+    console.log( 'REFUNDS (wei): ' + refunds.length );
+    let refsum = 0;
 
-    // the token contract has 18 decimals. Since ethereum does not have
-    // floating point we have to specify the tokens to transfer as units:
-    //   tokens * 10**decimals
-    qty = qty * new bigInt('1e18');
+    for (let jj = 0; jj < refunds.length; jj++) {
+      console.log( refunds[jj]['sender'] + ' ' + refunds[jj]['weisent'] );
+      refsum += refunds[jj]['weisent'];
+    }
 
-    // mine the tokens for the sale, leaves them in the caller's account
-    // NOTE: caller must be the owner of the token smart contract to work
-
-    console.log( 'mining: ' + qty + ' ORST for ' + receipts[ii]['sender'] );
-
-    con.mine( qty )
-      .send( {from: web3.eth.accounts[6], gas: 64000, gasPrice: MYGASPRICE} );
-      .then( () => {
-
-      // transfer the tokens from caller's account to sender
-
-      con.transfer( receipts[ii]['sender'], qty )
-         .send( {from: web3.eth.accounts[6],
-                 gas: 70000,
-                 gasPrice: MYGASPRICE} );
-
-    });
-
-    processRefunds();
-
-  } // end foreach receipt
+    console.log( 'sum (wei): ' + refsum );
+  }, 35000 );
 }
 
-// ----------------------------------------------------------------------------
-// Process refunds
-// ----------------------------------------------------------------------------
+//  con.mine( qty )
+//    .send( {from: web3.eth.accounts[6], gas: 64000, gasPrice: MYGASPRICE} );
+//    .then( () => {
 
-function processRefunds() {
-  for (let ii = 0; ii < refunds.length; ii++) {
-    console.log( 'refund: ' + refunds[ii]['number'] );
+// transfer the tokens from caller's account to sender
 
-    // NOTE: requires calling account to already have enough ETH to process
-    //       all the refunds
+//    con.transfer( distribs[ii]['sender'], qty )
+//       .send( {from: web3.eth.accounts[6],
+//               gas: 70000,
+//               gasPrice: MYGASPRICE} );
 
-    web3.eth.sendTransaction( {from: web3.eth.accounts[6],
-                               to: refunds[ii]['sender'],
-                               gas: 22000,
-                               gasPrice: MYGASPRICE} );
-  }
-}
+//  });
 
+//  web3.eth.sendTransaction( {from: web3.eth.accounts[6],
+//                             to: refunds[ii]['sender'],
+//                             gas: 22000,
+//                             gasPrice: MYGASPRICE} );
+
+readEidooWalletFile();
+readReceiptFile();

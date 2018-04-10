@@ -7,7 +7,7 @@ const Web3 = require('web3');
 const web3 =
   new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8546"));
 
-const MYGASPRICE = '' + 2 * 1e9;
+const MYGASPRICE = '' + 1 * 1e9;
 
 function getABI() {
   return JSON.parse( fs.readFileSync('./build/Community_sol_Community.abi')
@@ -32,6 +32,11 @@ function checkAddr(addr) {
     usage();
     process.exit(1);
   }
+}
+
+function shorten(addr) {
+  var saddr = "" + addr;
+  return "0x" + saddr.substring(26);
 }
 
 const cmds =
@@ -141,12 +146,12 @@ web3.eth.getAccounts().then( (res) => {
           for (var ii = 0; ii < events.length; ii++) {
 
             if (events[ii].event == 'Receipt')
-              console.log( events[ii].raw.topics[1] + ' ' +   // from
+              // note: commdistrib.sh depends on the fields of the report
+              console.log( shorten(events[ii].raw.topics[1]) + ' ' +
                            parseInt(events[ii].raw.data,16) + ' ' +
-                           events[ii].blockNumber
+                           events[ii].blockNumber + ' ' +
+                           events[ii].address
                            );
-
-            console.log( '' );
           }
 
           process.exit(0);

@@ -20,7 +20,7 @@ web3.eth.getCoinbase().then( (res) => {
   cb = res;
 
   contract.deploy( {data: bytecode, arguments: [] })
-          .send( {from: cb, gas: 280000}, (err,res) =>
+          .send( {from: cb, gas: 300000}, (err,res) =>
           {
             if (err) console.log(err);
             if (res) console.log(res);

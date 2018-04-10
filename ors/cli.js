@@ -7,10 +7,12 @@
 
 const fs = require('fs');
 const Web3 = require('web3');
-const web3 =
-  new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+const math = require('mathjs');
 
-const MYGASPRICE = '' + 4 * 1e9;
+const web3 =
+  new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8546"));
+
+const MYGASPRICE = '' + 0.4 * 1e9;
 
 function getABI() {
   return JSON.parse( fs.readFileSync(
@@ -40,6 +42,7 @@ function checkAddr(addr) {
 
 const cmds =
   [
+   'airdrop',
    'allowance',
    'approve',
    'approveAndCall',
@@ -60,6 +63,7 @@ function usage() {
   console.log(
     'Usage:\n$ node cli.js <acctindex> <SCA> <command> [arg]*\n',
      'Commands:\n',
+     '\tairdrop <filename> |\n',
      '\tallowance <owner> <spender> |\n',
      '\tapprove <spender> <value> |\n',
      '\tapproveAndCall <spender> <value> <context> |\n',
@@ -125,6 +129,31 @@ else
     {
       let con = new web3.eth.Contract( getABI(), sca );
 
+      if (cmd == 'airdrop')
+      {
+        console.log( 'airdrop: ', process.argv[5], ' gasPrice: ', MYGASPRICE );
+
+        var reader = require('readline').createInterface(
+          { input: fs.createReadStream( process.argv[5]) } );
+
+        reader.on('line', function(line) {
+          let parts = line.split( /\s+/ );
+          let ramt = math.bignumber( parts[1] );
+          let amt = math.format(ramt, {notation:"fixed"});
+          console.log( 'to: ', parts[0], ' amt: ', amt );
+
+          con.methods.transfer( parts[0], amt )
+             .send( {from: eb, gas: 100000, gasPrice: MYGASPRICE},
+                    (err, txhash) => {
+                      if (err) console.log( 'ERR: ', err );
+                      if (txhash) console.log( 'tx: ', txhash );
+                    } );
+        } )
+        .on('close', () => {
+          console.log( 'done' );
+        } );
+      }
+
       if (cmd == 'allowance')
       {
         let owner = process.argv[5];
@@ -186,7 +215,7 @@ else
 
       if (cmd == 'events')
       {
-        con.getPastEvents('allEvents', {fromBlock: 0, toBlock: 'latest'})
+        con.getPastEvents('allEvents', {fromBlock: 500000, toBlock: 'latest'})
            .then( (events) => {
 
           for (var ii = 0; ii < events.length; ii++)
@@ -214,9 +243,12 @@ else
 
       if (cmd == 'mine')
       {
-        let amt = process.argv[5];
+        let ramt = math.bignumber( process.argv[5] );
+        let amt = math.format(ramt, {notation:"fixed"});
+
+        console.log( 'mine( ' + amt + ' )' );
         con.methods.mine( amt )
-                   .send( {from: eb, gas: 64000, gasPrice: MYGASPRICE} );
+                   .send( {from: eb, gas: 100000, gasPrice: MYGASPRICE} );
       }
 
       if (cmd == 'transfer')
@@ -243,6 +275,8 @@ else
         {
           let toaddr = process.argv[5];
           let value = process.argv[6];
+          console.log( 'to: ', toaddr, ' amt: ', value );
+
           con.methods.transfer( toaddr, value )
                      .send( {from: eb, gas: 70000, gasPrice: MYGASPRICE} );
         }
