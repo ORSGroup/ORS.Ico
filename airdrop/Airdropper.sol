@@ -6,12 +6,34 @@ interface ERC20 {
   function transfer( address to, uint256 value ) external;
 }
 
-contract Airdropper {
+contract owned {
+  address public owner;
 
-  // NOTE: be careful about array size and block gas limit. check ethstats.net
+  function owned() public {
+    owner = msg.sender;
+  }
+
+  function changeOwner( address _miner ) public onlyOwner {
+    owner = _miner;
+  }
+
+  modifier onlyOwner {
+    require (msg.sender == owner);
+    _;
+  }
+}
+
+//
+// NOTE: this Airdropper becomes msg.sender for the token transfer and must
+//       already be the holder of enough tokens
+//
+contract Airdropper is owned {
+
+  // NOTE: caller be careful about array size and block gas limit.
+  //       check ethstats.net
   function airdrop( address tokAddr,
                     address[] dests,
-                    uint[] quantities ) public returns (uint) {
+                    uint[] quantities ) public onlyOwner returns (uint) {
 
     for (uint ii = 0; ii < dests.length; ii++) {
       ERC20(tokAddr).transfer( dests[ii], quantities[ii] );

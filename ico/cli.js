@@ -10,7 +10,7 @@ const Web3 = require('web3');
 const web3 =
   new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
-const MYGASPRICE = '' + 4 * 1e9;
+const MYGASPRICE = '' + 15 * 1e9;
 
 function getABI() {
   return JSON.parse( fs.readFileSync('./build/ICO_sol_ICO.abi').toString() );

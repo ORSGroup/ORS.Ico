@@ -150,9 +150,13 @@ else
 
       if (cmd == 'events')
       {
-        con.events.Airdropped( "allEvents", function( err, evts ) {
-          if (err) console.log( err );
-          else console.log( evts );
+        con.getPastEvents( 'allEvents',
+                           { fromBlock: 0, toBlock: 'latest' } )
+           .then( (events) => {
+
+          for (var ii = 0; ii < events.length; ii++) {
+              console.log( events[ii] );
+          }
         } );
       }
     }

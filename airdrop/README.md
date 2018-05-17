@@ -9,5 +9,5 @@ A script reads the ethereum accounts and number of tokens to drop from
 a text file. It formats the data as two equal-size arrays and passes them
 through web3 to the airdrop smart contract.
 
-SCA: 0xfa1A95e1f2922c0652F159a1922379d712aa7953
+SCA: DO NOT USE
 
