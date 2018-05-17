@@ -1,5 +1,5 @@
-// compiler: 0.4.21+commit.dfe3193c.Emscripten.clang
-pragma solidity ^0.4.21;
+// 0.4.20+commit.3155dd80.Emscripten.clang
+pragma solidity ^0.4.20;
 
 // Ethereum Token callback
 interface tokenRecipient {
@@ -41,11 +41,9 @@ contract MineableToken is owned {
   string  public symbol;
   uint8   public decimals;
   uint256 public totalSupply;
-
   uint256 public supplyCap;
 
   mapping( address => uint256 ) balances_;
-
   mapping( address => mapping(address => uint256) ) allowances_;
 
   // ERC20
@@ -131,9 +129,11 @@ contract MineableToken is owned {
 
   // ERC20
   function transfer(address to, uint256 value) public
+  returns (bool success)
   {
     bytes memory empty; // null
     _transfer( msg.sender, to, value, empty );
+    return true;
   }
 
   // ERC20

@@ -24,7 +24,10 @@ const https = require( 'https' );
 const rdr = require( 'readline' );
 
 const fname = 'sortedreceipts.txt';
-const ename = 'eidoo_addresses_20180409.csv';
+//const ename = 'eidoo_addresses_20180409.csv';
+const ename = 'eidoo_addresses_20180427.txt'
+
+// https://eidoo-api-1.eidoo.io/api/ico/<addr>/authorization/<addr>
 
 const authurl1 = 'https://eidoo-api-1.eidoo.io/api/ico/';
 const authurl2 = '/authorization/';

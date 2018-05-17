@@ -12,7 +12,7 @@ const math = require('mathjs');
 const web3 =
   new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8546"));
 
-const MYGASPRICE = '' + 0.4 * 1e9;
+const MYGASPRICE = '' + 3 * 1e9;
 
 function getABI() {
   return JSON.parse( fs.readFileSync(
@@ -248,7 +248,8 @@ else
 
         console.log( 'mine( ' + amt + ' )' );
         con.methods.mine( amt )
-                   .send( {from: eb, gas: 100000, gasPrice: MYGASPRICE} );
+                   .send( {from: eb, gas: 100000, gasPrice: MYGASPRICE} )
+                   .catch( (err) => { console.log(err); process.exit(1); } );
       }
 
       if (cmd == 'transfer')

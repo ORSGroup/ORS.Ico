@@ -140,13 +140,13 @@ web3.eth.getAccounts().then( (res) => {
       if (cmd == 'events')
       {
         con.getPastEvents( 'allEvents',
-                           { fromBlock: 500000, toBlock: 'latest' } )
+                           { fromBlock: 5300000, toBlock: 'latest' } )
            .then( (events) => {
 
           for (var ii = 0; ii < events.length; ii++) {
 
             if (events[ii].event == 'Receipt')
-              // note: commdistrib.sh depends on the fields of the report
+
               console.log( shorten(events[ii].raw.topics[1]) + ' ' +
                            parseInt(events[ii].raw.data,16) + ' ' +
                            events[ii].blockNumber + ' ' +
